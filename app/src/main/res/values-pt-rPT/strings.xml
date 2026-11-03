@@ -20,6 +20,11 @@
     <string name="abbreviation_unit_milliseconds">"%s ms"</string>
     <string name="settings_system_default">"Predef. do sistema"</string>
     <string name="use_contacts_dict_summary">Usar nomes dos Contactos para sugestões e correções</string>
+    <string name="voice_in_keyboard">Ditado dentro do teclado</string>
+    <string name="voice_in_keyboard_summary">Toque longo na barra de espaços (ou a tecla de voz) para ditar com o reconhecimento de voz do sistema sem trocar de teclado. Toque no espaço para parar. Precisa da permissão do microfone.</string>
+    <string name="voice_in_keyboard_listening">A ouvir…</string>
+    <string name="voice_in_keyboard_no_permission">O ditado precisa da permissão do microfone</string>
+    <string name="voice_in_keyboard_error">Erro no ditado (%d)</string>
     <string name="use_personalized_dicts">"Sugestões personalizadas"</string>
     <string name="use_double_space_period">"Ponto de espaço duplo"</string>
     <string name="use_double_space_period_summary">"Tocar duas vezes na barra de espaço insere um ponto seguido de espaço"</string>

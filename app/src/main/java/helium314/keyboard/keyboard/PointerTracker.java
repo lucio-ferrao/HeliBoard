@@ -1170,6 +1170,13 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             sListener.onReleaseKey(popupKeyCode, false);
             return;
         }
+        if (code == Constants.CODE_SPACE && key.getPopupKeys() == null && Settings.getValues().mVoiceInKeyboard) {
+            // Long pressing the space key starts dictation inside the keyboard.
+            cancelKeyTracking();
+            sListener.onReleaseKey(code, false);
+            sListener.onCodeInput(KeyCode.VOICE_INPUT, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
+            return;
+        }
         if (code == KeyCode.LANGUAGE_SWITCH
                 || (code == Constants.CODE_SPACE && key.getPopupKeys() == null && Settings.getValues().mSpaceForLangChange)
         ) {

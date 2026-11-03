@@ -119,6 +119,7 @@ public class LatinIME extends InputMethodService implements
             DictionaryFacilitatorProvider.getDictionaryFacilitator(false);
     private final DictionaryFacilitator mOriginalDictionaryFacilitator = mDictionaryFacilitator;
     final InputLogic mInputLogic = new InputLogic(this, this, mDictionaryFacilitator);
+    private final VoiceDictation mVoiceDictation = new VoiceDictation(this);
 
     // TODO: Move these {@link View}s to {@link KeyboardSwitcher}.
     private View mInputView;
@@ -621,6 +622,7 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public void onDestroy() {
+        mVoiceDictation.cancel();
         mClipboardHistoryManager.onDestroy();
         mDictionaryFacilitator.closeDictionaries();
         mSettings.onDestroy();
@@ -714,6 +716,7 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public void onFinishInputView(final boolean finishingInput) {
+        mVoiceDictation.cancel();
         StatsUtils.onFinishInputView();
         mHandler.onFinishInputView(finishingInput);
         mStatsUtilsManager.onFinishInputView();
@@ -723,6 +726,7 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public void onFinishInput() {
+        mVoiceDictation.cancel();
         mHandler.onFinishInput();
         BackgroundGatheringCache.saveOrClear(this);
     }
@@ -1339,7 +1343,18 @@ public class LatinIME extends InputMethodService implements
     // completely replace #onCodeInput.
     public void onEvent(@NonNull final Event event) {
         if (KeyCode.VOICE_INPUT == event.getKeyCode()) {
-            mRichImm.switchToShortcutIme(this);
+            if (mVoiceDictation.isListening())
+                mVoiceDictation.stop();
+            else if (!mSettings.getCurrent().mVoiceInKeyboard || !mVoiceDictation.start())
+                mRichImm.switchToShortcutIme(this);
+        } else if (mVoiceDictation.isListening()) {
+            // space stops dictation (the label on the space bar says so), any other key ends it
+            // immediately, keeping what was recognized so far
+            if (event.getCodePoint() == Constants.CODE_SPACE) {
+                mVoiceDictation.stop();
+                return;
+            }
+            mVoiceDictation.cancel();
         }
         InputTransaction completeInputTransaction =
                 mInputLogic.onCodeInput(mSettings.getCurrent(), event, mKeyboardSwitcher.getKeyboardCapsMode(), mHandler);
@@ -1349,6 +1364,7 @@ public class LatinIME extends InputMethodService implements
 
     public void onTextInput(@Nullable String rawText) {
         if (rawText == null) return;
+        mVoiceDictation.cancel();
         // TODO: have the keyboard pass the correct key code when we need it.
         Event event = Event.createSoftwareTextEvent(rawText, KeyCode.MULTIPLE_CODE_POINTS, null);
         InputTransaction completeInputTransaction = mInputLogic.onTextInput(mSettings.getCurrent(),
@@ -1517,6 +1533,22 @@ public class LatinIME extends InputMethodService implements
     public void removeExternalSuggestions() {
         setNeutralSuggestionStrip();
         mHandler.postResumeSuggestions(false);
+    }
+
+    void onVoiceDictationStarted() {
+        final String listening = getString(R.string.voice_in_keyboard_listening);
+        final MainKeyboardView view = mKeyboardSwitcher.getMainKeyboardView();
+        if (view != null) view.setSpacebarOverrideText(listening);
+        else mKeyboardSwitcher.showToast(listening, true);
+    }
+
+    void onVoiceDictationFinished() {
+        final MainKeyboardView view = mKeyboardSwitcher.getMainKeyboardView();
+        if (view != null) view.setSpacebarOverrideText(null);
+    }
+
+    void showVoiceDictationError(final String message) {
+        mKeyboardSwitcher.showToast(message, false);
     }
 
     private void loadKeyboard() {

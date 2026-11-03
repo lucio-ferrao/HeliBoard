@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application android:label="@string/english_ime_name"
             android:name="helium314.keyboard.latin.App"
@@ -131,6 +132,11 @@ SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
             <!-- changed to * as it's supposed to help with finding other keyboard apps, see https://github.com/HeliBorg/HeliBoard/issues/1340 -->
             <!--<action android:name="android.view.InputMethod" />-->
             <action android:name="*" />
+        </intent>
+
+        <!-- To find the speech recognizer for dictation inside the keyboard -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
         </intent>
 
         <!-- To detect names of installed apps -->
