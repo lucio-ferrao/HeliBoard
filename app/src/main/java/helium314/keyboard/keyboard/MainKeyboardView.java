@@ -17,7 +17,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -59,6 +62,8 @@ import helium314.keyboard.latin.utils.KtxKt;
 import helium314.keyboard.latin.utils.LanguageOnSpacebarUtils;
 import helium314.keyboard.latin.utils.Log;
 import helium314.keyboard.latin.utils.TypefaceUtils;
+import helium314.keyboard.keyboard.internal.KeyboardIconsSet;
+import helium314.keyboard.latin.utils.ToolbarKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +82,8 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
     private Key mSpaceKey;
     // shown on the space bar instead of the language, e.g. while dictating
     @Nullable private String mSpacebarOverrideText;
+    // shown on the space bar instead of the language when long press on space starts dictation
+    @Nullable private Drawable mSpacebarVoiceIcon;
     // Stuff to draw language name on spacebar.
     private final int mLanguageOnSpacebarFinalAlpha;
     private final ObjectAnimator mLanguageOnSpacebarFadeoutAnimator;
@@ -713,7 +720,9 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         final int code = key.getCode();
         if (code == Constants.CODE_SPACE) {
             // If input language are explicitly selected.
-            if (mLanguageOnSpacebarFormatType != LanguageOnSpacebarUtils.FORMAT_TYPE_NONE || mSpacebarOverrideText != null) {
+            if (mSpacebarOverrideText == null && Settings.getValues().mVoiceInKeyboard) {
+                drawVoiceIconOnSpacebar(key, canvas);
+            } else if (mLanguageOnSpacebarFormatType != LanguageOnSpacebarUtils.FORMAT_TYPE_NONE || mSpacebarOverrideText != null) {
                 drawLanguageOnSpacebar(key, canvas, paint);
             }
             // Whether space key needs to show the "..." popup hint for special purposes
@@ -723,6 +732,18 @@ public final class MainKeyboardView extends KeyboardView implements DrawingProxy
         } else if (code == KeyCode.LANGUAGE_SWITCH) {
             drawKeyPopupHint(key, canvas, paint, params);
         }
+    }
+
+    private void drawVoiceIconOnSpacebar(final Key key, final Canvas canvas) {
+        if (mSpacebarVoiceIcon == null) {
+            mSpacebarVoiceIcon = KeyboardIconsSet.Companion.getInstance().getNewDrawable(ToolbarKey.VOICE.name(), getContext());
+            if (mSpacebarVoiceIcon == null) return;
+            mSpacebarVoiceIcon.setColorFilter(new PorterDuffColorFilter(mLanguageOnSpacebarTextColor, PorterDuff.Mode.SRC_IN));
+        }
+        final int size = (int) Math.min(key.getHeight() * 0.42f, mLanguageOnSpacebarTextSize);
+        // at the left end of the space bar
+        final int left = Math.max(mLanguageOnSpacebarHorizontalMargin, (key.getHeight() - size) / 2);
+        drawIcon(canvas, mSpacebarVoiceIcon, left, (key.getHeight() - size) / 2, size, size);
     }
 
     public void setSpacebarOverrideText(@Nullable final String text) {
