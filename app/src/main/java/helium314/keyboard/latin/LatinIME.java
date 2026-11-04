@@ -1348,10 +1348,15 @@ public class LatinIME extends InputMethodService implements
             else if (!mSettings.getCurrent().mVoiceInKeyboard || !mVoiceDictation.start())
                 mRichImm.switchToShortcutIme(this);
         } else if (mVoiceDictation.isListening()) {
-            // space stops dictation (the label on the space bar says so), any other key ends it
-            // immediately, keeping what was recognized so far
+            // space stops dictation (the label on the space bar says so), backspace deletes a word,
+            // any other key ends it immediately, keeping what was recognized so far
             if (event.getCodePoint() == Constants.CODE_SPACE) {
                 mVoiceDictation.stop();
+                return;
+            }
+            // backspace deletes the last word and keeps listening
+            if (event.getKeyCode() == KeyCode.DELETE) {
+                mVoiceDictation.deleteLastWord();
                 return;
             }
             mVoiceDictation.cancel();
@@ -1545,6 +1550,10 @@ public class LatinIME extends InputMethodService implements
     void onVoiceDictationFinished() {
         final MainKeyboardView view = mKeyboardSwitcher.getMainKeyboardView();
         if (view != null) view.setSpacebarOverrideText(null);
+    }
+
+    void onVoiceDictationSend() {
+        onCodeInput(Constants.CODE_ENTER, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
     }
 
     void showVoiceDictationError(final String message) {
