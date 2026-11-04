@@ -25,6 +25,7 @@ Does not use internet permission, and thus is 100% offline.
   <ul>
     <li>build your own, or get them  <a href="https://codeberg.org/Helium314/aosp-dictionaries#dictionaries">here</a> (quality may vary)</li>
     <li>additional dictionaries for emojis or scientific symbols can be used to provide suggestions (similar to "emoji search")</li>
+    <li>the built-in Portuguese (Portugal) dictionary is made from the <a href="https://codeberg.org/Helium314/aosp-dictionaries">experimental pt_PT word list</a> (built from the <a href="https://wortschatz.uni-leipzig.de/en/download/">Leipzig Corpora Collection</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>), with Brazilian spellings removed or demoted and misspellings of accents turned into corrections</li>
     <li>note that for Korean layouts, suggestions only work using <a href="https://github.com/openboard-team/openboard/commit/83fca9533c03b9fecc009fc632577226bbd6301f">this dictionary</a>, the tools in the dictionary repository are not able to create working dictionaries</li>
   </ul>
   <li>Customize keyboard themes (style, colors and background image)</li>
