@@ -92,6 +92,9 @@ import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import android.text.InputType;
+import helium314.keyboard.latin.utils.InputTypeUtils;
+import helium314.keyboard.latin.dictionary.Dictionary;
 
 /**
  * Input method implementation for Qwerty'ish keyboard.
@@ -119,7 +122,9 @@ public class LatinIME extends InputMethodService implements
             DictionaryFacilitatorProvider.getDictionaryFacilitator(false);
     private final DictionaryFacilitator mOriginalDictionaryFacilitator = mDictionaryFacilitator;
     final InputLogic mInputLogic = new InputLogic(this, this, mDictionaryFacilitator);
+    private static final int EMAIL_CONTEXT_LENGTH = 256;
     private final VoiceDictation mVoiceDictation = new VoiceDictation(this);
+    private final EmailSuggestions mEmailSuggestions = new EmailSuggestions(this);
 
     // TODO: Move these {@link View}s to {@link KeyboardSwitcher}.
     private View mInputView;
@@ -717,6 +722,7 @@ public class LatinIME extends InputMethodService implements
     @Override
     public void onFinishInputView(final boolean finishingInput) {
         mVoiceDictation.cancel();
+        learnEmailField();
         StatsUtils.onFinishInputView();
         mHandler.onFinishInputView(finishingInput);
         mStatsUtilsManager.onFinishInputView();
@@ -1424,7 +1430,9 @@ public class LatinIME extends InputMethodService implements
         return null != mSuggestionStripView;
     }
 
-    private void setSuggestedWords(final SuggestedWords suggestedWords) {
+    private void setSuggestedWords(final SuggestedWords wordSuggestions) {
+        // email fields get suggestions from the addresses typed before instead of words
+        final SuggestedWords suggestedWords = isEmailField() ? getEmailSuggestedWords() : wordSuggestions;
         final SettingsValues currentSettingsValues = mSettings.getCurrent();
         mInputLogic.setSuggestedWords(suggestedWords);
         // TODO: Modify this when we support suggestions with hard keyboard
@@ -1482,6 +1490,10 @@ public class LatinIME extends InputMethodService implements
     // interface
     @Override
     public void pickSuggestionManually(SuggestedWordInfo suggestionInfo) {
+        if (isEmailField() && suggestionInfo.mSourceDict == Dictionary.DICTIONARY_HARDCODED && suggestionInfo.mWord.contains("@")) {
+            pickEmailSuggestion(suggestionInfo.mWord);
+            return;
+        }
         InputTransaction completeInputTransaction = mInputLogic.onPickSuggestionManually(
                 mSettings.getCurrent(), suggestionInfo, mKeyboardSwitcher.getKeyboardCapsMode(), mHandler);
         updateStateAfterInputTransaction(completeInputTransaction);
@@ -1538,6 +1550,39 @@ public class LatinIME extends InputMethodService implements
     public void removeExternalSuggestions() {
         setNeutralSuggestionStrip();
         mHandler.postResumeSuggestions(false);
+    }
+
+    private boolean isEmailField() {
+        final int inputType = mSettings.getCurrent().mInputAttributes.mInputType;
+        return (inputType & InputType.TYPE_MASK_CLASS) == InputType.TYPE_CLASS_TEXT
+                && InputTypeUtils.isEmailVariation(inputType & InputType.TYPE_MASK_VARIATION);
+    }
+
+    private SuggestedWords getEmailSuggestedWords() {
+        final CharSequence before = mInputLogic.mConnection.getTextBeforeCursor(EMAIL_CONTEXT_LENGTH, 0);
+        final String token = mEmailSuggestions.currentToken(before == null ? "" : before);
+        return mEmailSuggestions.toSuggestedWords(mEmailSuggestions.suggestions(token));
+    }
+
+    private void pickEmailSuggestion(final String email) {
+        mInputLogic.finishInput();
+        final RichInputConnection connection = mInputLogic.mConnection;
+        final CharSequence before = connection.getTextBeforeCursor(EMAIL_CONTEXT_LENGTH, 0);
+        final String token = mEmailSuggestions.currentToken(before == null ? "" : before);
+        connection.beginBatchEdit();
+        connection.deleteTextBeforeCursor(token.length());
+        connection.commitText(email, 1);
+        connection.endBatchEdit();
+        setNeutralSuggestionStrip();
+    }
+
+    /** Remember the addresses typed in an email field, unless in incognito mode. */
+    private void learnEmailField() {
+        if (!isEmailField() || mSettings.getCurrent().mIncognitoModeEnabled) return;
+        final RichInputConnection connection = mInputLogic.mConnection;
+        final CharSequence before = connection.getTextBeforeCursor(EMAIL_CONTEXT_LENGTH, 0);
+        final CharSequence after = connection.getTextAfterCursor(EMAIL_CONTEXT_LENGTH, 0);
+        mEmailSuggestions.learn((before == null ? "" : before) + "" + (after == null ? "" : after));
     }
 
     void onVoiceDictationStarted() {
