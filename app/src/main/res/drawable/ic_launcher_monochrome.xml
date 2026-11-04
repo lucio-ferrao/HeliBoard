@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- versão monocromática do ícone (ícones temáticos do Android 13+) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <path android:strokeColor="#FFFFFF" android:strokeWidth="3"
+      android:pathData="M40,31H68A9,9 0,0 1,77 40V68A9,9 0,0 1,68 77H40A9,9 0,0 1,31 68V40A9,9 0,0 1,40 31Z"/>
+  <path android:fillColor="#FFFFFF"
+      android:pathData="M61.71 58.16V66.99H64.23V69H55.83V66.76Q54.67 68.15 53.24 68.82Q51.82 69.48 49.99 69.48Q47.28 69.48 45.83 68.03Q44.38 66.58 44.38 63.87Q44.38 60.9 46.46 59.42Q48.55 57.94 52.75 57.94H55.83V56.9Q55.83 54.76 54.82 53.73Q53.81 52.71 51.68 52.71Q49.92 52.71 48.97 53.44Q48.02 54.16 47.62 55.8H45.74V52Q47.32 51.44 49.01 51.15Q50.7 50.87 52.58 50.87Q57.31 50.87 59.51 52.63Q61.71 54.39 61.71 58.16ZM55.83 63.46V59.92H53.63Q51.98 59.92 51.1 60.82Q50.22 61.71 50.22 63.39Q50.22 65.07 50.86 65.9Q51.5 66.73 52.81 66.73Q54.17 66.73 55 65.83Q55.83 64.93 55.83 63.46Z"/>
+  <path android:strokeColor="#FFFFFF" android:strokeWidth="4.2" android:strokeLineCap="round"
+      android:pathData="M41,42 C44,36 49,36 53,40 S61,44 66,37"/>
+</vector>
