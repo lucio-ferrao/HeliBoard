@@ -1367,6 +1367,12 @@ public class LatinIME extends InputMethodService implements
             }
             mVoiceDictation.cancel();
         }
+        // double tap on space switches between the letters and the emoji palette
+        if (mInputLogic.takeBackSpaceOnDoubleTap(event)) {
+            onCodeInput(mKeyboardSwitcher.isShowingEmojiPalettes() ? KeyCode.ALPHA : KeyCode.EMOJI,
+                    Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false);
+            return;
+        }
         InputTransaction completeInputTransaction =
                 mInputLogic.onCodeInput(mSettings.getCurrent(), event, mKeyboardSwitcher.getKeyboardCapsMode(), mHandler);
         updateStateAfterInputTransaction(completeInputTransaction);

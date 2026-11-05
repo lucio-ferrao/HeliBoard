@@ -19,6 +19,7 @@ import android.text.style.BackgroundColorSpan;
 import android.text.style.SuggestionSpan;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.ViewConfiguration;
 import android.view.inputmethod.CorrectionInfo;
 import android.view.inputmethod.EditorInfo;
 
@@ -125,6 +126,7 @@ public final class InputLogic {
     // Find a way to remove it for readability.
     private boolean mIsAutoCorrectionIndicatorOn;
     private long mDoubleSpacePeriodCountdownStart;
+    private long mLastSpaceTapTime;
 
     private boolean mJustRevertedACommit = false;
 
@@ -1525,6 +1527,32 @@ public final class InputLogic {
             mConnection.removeTrailingSpace();
         }
         return false;
+    }
+
+    /**
+     * Double tap on space: takes back the space typed by the first tap and returns true, so that the caller
+     * switches between the letters and the emoji palette instead of typing the second space.
+     */
+    public boolean takeBackSpaceOnDoubleTap(final Event event) {
+        if (event.getCodePoint() != Constants.CODE_SPACE || event.isKeyRepeat()) {
+            mLastSpaceTapTime = 0;
+            return false;
+        }
+        final long now = SystemClock.uptimeMillis();
+        if (now - mLastSpaceTapTime >= ViewConfiguration.getDoubleTapTimeout()) {
+            mLastSpaceTapTime = now;
+            return false;
+        }
+        mLastSpaceTapTime = 0;
+        mConnection.beginBatchEdit();
+        final CharSequence before = mConnection.getTextBeforeCursor(1, 0);
+        if (before != null && before.length() == 1 && before.charAt(0) == Constants.CODE_SPACE)
+            mConnection.deleteTextBeforeCursor(1);
+        mConnection.endBatchEdit();
+        mSpaceState = SpaceState.NONE;
+        mLastComposedWord = LastComposedWord.NOT_A_COMPOSED_WORD;
+        cancelDoubleSpacePeriodCountdown();
+        return true;
     }
 
     public void startDoubleSpacePeriodCountdown(final InputTransaction inputTransaction) {
