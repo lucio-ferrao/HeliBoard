@@ -8,6 +8,7 @@ package helium314.keyboard.keyboard
 import android.text.InputType
 import android.text.TextUtils
 import android.view.inputmethod.EditorInfo
+import helium314.keyboard.compat.AppWorkarounds
 import helium314.keyboard.compat.EditorInfoCompatUtils.imeActionName
 import helium314.keyboard.latin.CapsMode
 import helium314.keyboard.latin.R
@@ -37,7 +38,8 @@ data class KeyboardId(
     val isSplitLayout: Boolean,
     val oneHandedModeEnabled: Boolean,
     val internalAction: KeyboardLayoutSet.InternalAction?,
-    val emojiSearchAvailable: Boolean
+    val emojiSearchAvailable: Boolean,
+    val sendsOnHardwareEnter: Boolean
 ) {
     lateinit var editorInfo: EditorInfo // we don't want it in the data class constructor
 
@@ -62,6 +64,7 @@ data class KeyboardId(
         params.settingsValues?.mOneHandedModeEnabled ?: false,
         params.internalAction,
         params.emojiSearchAvailable,
+        AppWorkarounds.sendsOnHardwareEnter(params.editorInfo.packageName),
     ) {
         editorInfo = params.editorInfo
     }

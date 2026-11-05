@@ -151,8 +151,15 @@ sealed interface KeyData : AbstractKeyData {
             return Settings.getInstance().getInLocale(id, locale)
         }
 
-        private fun getActionKeyPopupKeys(params: KeyboardParams): SimplePopups? =
-            getActionKeyPopupKeyString(params.mId)?.let { createActionPopupKeys(it, params) }
+        private fun getActionKeyPopupKeys(params: KeyboardParams): SimplePopups? {
+            val popupKeys = getActionKeyPopupKeyString(params.mId)
+            // Enter sends in these apps, so the new line also goes into the popup
+            val withNewLine = if (popupKeys == POPUP_KEYS_NAVIGATE_EMOJI && params.mId.isMultiLine
+                    && params.mId.sendsOnHardwareEnter)
+                "$POPUP_KEYS_NEW_LINE,$popupKeys"
+            else popupKeys
+            return withNewLine?.let { createActionPopupKeys(it, params) }
+        }
 
         private fun getActionKeyPopupKeyString(keyboardId: KeyboardId): String? {
             val action = keyboardId.imeAction
@@ -254,6 +261,7 @@ sealed interface KeyData : AbstractKeyData {
         private const val POPUP_KEYS_NAVIGATE_NEXT = "!icon/clipboard_action_key|!code/key_clipboard,!icon/next_key|!code/key_action_next"
         private const val POPUP_KEYS_NAVIGATE_PREVIOUS_NEXT = "!fixedColumnOrder!3,!needsDividers!,!icon/previous_key|!code/key_action_previous,!icon/clipboard_action_key|!code/key_clipboard,!icon/next_key|!code/key_action_next"
         private const val POPUP_KEYS_NAVIGATE_EMOJI_PREVIOUS = "!fixedColumnOrder!3,!needsDividers!,!icon/previous_key|!code/key_action_previous,!icon/clipboard_action_key|!code/key_clipboard,!icon/emoji_action_key|!code/key_emoji"
+        private const val POPUP_KEYS_NEW_LINE = "!icon/enter_key|!code/key_shift_enter"
         private const val POPUP_KEYS_NAVIGATE_EMOJI = "!icon/clipboard_action_key|!code/key_clipboard,!icon/emoji_action_key|!code/key_emoji"
         private const val POPUP_KEYS_NAVIGATE_EMOJI_NEXT = "!fixedColumnOrder!3,!needsDividers!,!icon/clipboard_action_key|!code/key_clipboard,!icon/emoji_action_key|!code/key_emoji,!icon/next_key|!code/key_action_next"
         private const val POPUP_KEYS_NAVIGATE_EMOJI_PREVIOUS_NEXT = "!fixedColumnOrder!4,!needsDividers!,!icon/previous_key|!code/key_action_previous,!icon/clipboard_action_key|!code/key_clipboard,!icon/emoji_action_key|!code/key_emoji,!icon/next_key|!code/key_action_next"

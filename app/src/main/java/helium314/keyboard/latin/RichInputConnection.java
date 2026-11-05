@@ -22,6 +22,7 @@ import helium314.keyboard.latin.common.ConstantsKt;
 import helium314.keyboard.latin.define.DebugFlags;
 import helium314.keyboard.latin.settings.Settings;
 import helium314.keyboard.latin.utils.Log;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.CorrectionInfo;
@@ -657,6 +658,20 @@ public final class RichInputConnection implements PrivateCommandPerformer {
         if (isConnected()) {
             mIC.sendKeyEvent(keyEvent);
         }
+    }
+
+    /**
+     * Sends Enter with the device id of a built-in hardware keyboard, for apps that only send on
+     * hardware Enter. The expected text is left as it is, because the app sends instead of
+     * adding a new line.
+     */
+    public void sendHardwareEnter() {
+        if (!isConnected()) return;
+        final long eventTime = SystemClock.uptimeMillis();
+        mIC.sendKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER,
+                0, 0, KeyCharacterMap.BUILT_IN_KEYBOARD, 0, KeyEvent.FLAG_KEEP_TOUCH_MODE));
+        mIC.sendKeyEvent(new KeyEvent(SystemClock.uptimeMillis(), eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER,
+                0, 0, KeyCharacterMap.BUILT_IN_KEYBOARD, 0, KeyEvent.FLAG_KEEP_TOUCH_MODE));
     }
 
     public void setComposingRegion(final int start, final int end) {

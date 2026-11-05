@@ -1228,7 +1228,12 @@ public final class InputLogic {
 
             enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
-            mConnection.commitCodePoint(codePoint);
+            if (Constants.CODE_ENTER == codePoint && event.getKeyCode() != KeyCode.SHIFT_ENTER
+                    && AppWorkarounds.INSTANCE.sendsOnHardwareEnter(getCurrentInputEditorInfo().packageName)) {
+                mConnection.sendHardwareEnter();
+            } else {
+                mConnection.commitCodePoint(codePoint);
+            }
 
             if (isInlineEmojiSearchAction()) {
                 inputTransaction.setRequiresUpdateSuggestions();

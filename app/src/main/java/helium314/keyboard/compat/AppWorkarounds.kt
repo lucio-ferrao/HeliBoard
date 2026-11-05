@@ -36,6 +36,10 @@ object AppWorkarounds {
     // of course they ignore android keycodes, because why should they stick to the same behavior we know from all other apps
     fun doesntCareAboutKeycodePaste(packageName: String?) = isFirefoxOrFork(packageName)
 
+    // Element X only sends on Enter from a hardware keyboard (MarkdownEditText checks the device id),
+    // so we send Enter as if it came from one, and a new line goes to Shift+Enter or the Enter popup
+    fun sendsOnHardwareEnter(packageName: String?) = packageName == "io.element.android.x"
+
     private fun isFirefoxOrFork(packageName: String?) = when (packageName) {
         "org.mozilla.fennec_fdroid", "org.mozilla.fenix", "org.mozilla.firefox_beta", "org.mozilla.focus",
         "org.mozilla.klar", "org.mozilla.firefox", "org.ironfoxoss.ironfox", "org.ironfoxoss.ironfox.nightly",
