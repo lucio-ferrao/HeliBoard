@@ -20,6 +20,12 @@ object AppWorkarounds {
             // for all others we also add NO_SUGGESTIONS to avoid JS messing with the composing text
             inputType or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT
         }
+        else if (packageName == "com.instagram.android") {
+            // Instagram's message box asks for AUTO_CORRECT and NO_SUGGESTIONS at the same time (0x2ac001),
+            // and Gboard shows suggestions there, so we drop NO_SUGGESTIONS when AUTO_CORRECT is set
+            if (inputType and InputType.TYPE_TEXT_FLAG_AUTO_CORRECT == 0) inputType
+            else inputType and InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS.inv()
+        }
         else inputType
     }
 
